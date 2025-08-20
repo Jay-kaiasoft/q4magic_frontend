@@ -35,28 +35,28 @@ function AccountModel({ setAlert, open, handleClose, accountId, handleGetAllAcco
         formState: { errors },
     } = useForm({
         defaultValues: {
-            crmId: "",
-            companyName: "",
-            link: '',
-            recordStatus: "",
-            logo: "",
-            salesforceAccountId: "",
-            accountName: "",
-            phone: ""
+            crmId: null,
+            companyName: null,
+            link: null,
+            recordStatus: null,
+            logo: null,
+            salesforceAccountId: null,
+            accountName: null,
+            phone: null
         },
     });
 
     const onClose = () => {
         setLoading(false);
         reset({
-            crmId: "",
-            companyName: "",
-            link: '',
-            recordStatus: "",
-            logo: "",
-            salesforceAccountId: "",
-            accountName: "",
-            phone: ""
+            crmId: null,
+            companyName: null,
+            link: null,
+            recordStatus: null,
+            logo: null,
+            salesforceAccountId: null,
+            accountName: null,
+            phone: null
         });
         handleClose();
     };
@@ -101,7 +101,7 @@ function AccountModel({ setAlert, open, handleClose, accountId, handleGetAllAcco
                         type: "success"
                     });
                     handleGetAllAccounts();
-                    handleClose();
+                    onClose();
                 } else {
                     setLoading(false);
                     setAlert({
@@ -114,14 +114,13 @@ function AccountModel({ setAlert, open, handleClose, accountId, handleGetAllAcco
                 const res = await createAccount(data);
                 if (res?.status === 201) {
                     setLoading(false);
-
                     setAlert({
                         open: true,
                         message: "Account created successfully",
                         type: "success"
                     });
                     handleGetAllAccounts();
-                    handleClose();
+                    onClose();
                 } else {
                     setLoading(false);
                     setAlert({
@@ -145,7 +144,6 @@ function AccountModel({ setAlert, open, handleClose, accountId, handleGetAllAcco
         <React.Fragment>
             <BootstrapDialog
                 open={open}
-                // onClose={onClose}
                 aria-labelledby="customized-dialog-title"
                 fullWidth
                 maxWidth='sm'

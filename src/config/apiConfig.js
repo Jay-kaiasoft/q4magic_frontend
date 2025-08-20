@@ -1,7 +1,8 @@
 export const baseURL = process.env.REACT_APP_MAIN_BASE_URL
 export const salesforceBaseURL = process.env.REACT_APP_SALESFORCE_API_BASE_URL
 
-export const q4magicSyncURL = baseURL + '/q4magic/sync'
+export const q4magicSyncURL = baseURL + '/syncToQ4Magic'
+export const syncFromQ4magicURL = baseURL + '/syncFromQ4Magic'
 
 
 export const salesforceAccountURL = salesforceBaseURL + '/account'

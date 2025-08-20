@@ -1,10 +1,20 @@
 import { useState, useEffect } from "react";
 import { connectToSalesforce } from "./service/salesforce/connect/salesforceConnectService";
-import { syncAccountsToQ4Magic } from "./service/salesforce/syncToQ4Magic/syncToQ4MagicService";
-import { getAllAccounts } from "./service/account/accountService";
-import AccountModel from "./models/accountModel";
 import { connect } from "react-redux";
 import { setAlert } from "./redux/commonReducers/commonReducers";
+import { Tabs } from "./components/common/tabs/tabs";
+import Account from "./pages/account";
+import Opportunities from "./pages/opportunities";
+
+
+const tabData = [
+    {
+        label: 'Accounts',
+    },
+    {
+        label: 'Opportunities',
+    },
+]
 
 const Salesforce = ({ setAlert }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -12,18 +22,10 @@ const Salesforce = ({ setAlert }) => {
     const [instanceUrl, setInstanceUrl] = useState(sessionStorage.getItem("instanceUrl_salesforce") || "");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [selectedTab, setSelectedTab] = useState(0);
 
-    const [accounts, setAccounts] = useState([]);
-    const [open, setOpen] = useState(false);
-    const [selectedAccountId, setSelectedAccountId] = useState(null);
-
-    const handleOpen = (accountId = null) => {
-        setSelectedAccountId(accountId);
-        setOpen(true);
-    }
-
-    const handleClose = () => {
-        setOpen(false);
+    const handleChangeTab = (value) => {
+        setSelectedTab(value);
     }
 
     const handleLogin = async () => {
@@ -91,51 +93,9 @@ const Salesforce = ({ setAlert }) => {
         }
     };
 
-    const handleGetAllAccounts = async () => {
-        try {
-            const accRes = await getAllAccounts();
-            if (accRes?.status === 200) {
-                setAccounts(accRes.result || []);
-            }
-        } catch (err) {
-            setError("Error fetching Salesforce data.");
-        }
-    };
-
-    const handleSyncAccounts = async () => {
-        setLoading(true);
-        try {
-            const res = await syncAccountsToQ4Magic();
-            if (res?.status === 200) {
-                setLoading(false);
-                setAlert({
-                    open: true,
-                    message: res?.message || "Accounts synced successfully",
-                    type: "success"
-                })
-                handleGetAllAccounts();
-            } else {
-                setLoading(false);
-                setAlert({
-                    open: true,
-                    message: res?.message || "Failed to sync accounts",
-                    type: "error"
-                })
-            }
-        } catch (err) {
-            setLoading(false);
-            setAlert({
-                open: true,
-                message: err.message || "Error syncing accounts to Q4Magic.",
-                type: "error"
-            })
-        }
-    }
-
     useEffect(() => {
         if (accessToken && instanceUrl) {
             setIsLoggedIn(true);
-            handleGetAllAccounts();
         }
     }, [accessToken, instanceUrl]);
 
@@ -161,36 +121,21 @@ const Salesforce = ({ setAlert }) => {
             ) : (
                 <>
                     <p className="mt-4">✅ Logged in to Salesforce</p>
-                    <button onClick={handleSyncAccounts} className="bg-green-500 text-white p-2 rounded">Sync Accounts to Q4Magic</button>
-                    <h3 className="text-lg font-semibold mt-4">Accounts</h3>
-                    <button onClick={() => handleOpen()} className="bg-purple-700 text-white p-2 rounded mb-2">Add New Account</button>
-                    <table className="table-auto border-collapse border border-gray-300">
-                        <thead>
-                            <tr>
-                                <th className="border p-2">Id</th>
-                                <th className="border p-2">Name</th>
-                                <th className="border p-2">Phone</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {accounts.map((acc) => (
-                                <tr key={acc.Id}>
-                                    <td className="border p-2">{acc.salesforceAccountId}</td>
-                                    <td className="border p-2">{acc.accountName}</td>
-                                    <td className="border p-2">{acc.phone}</td>
-                                    <td className="border p-2 flex justify-center items-center space-x-2">
-                                        <button
-                                            onClick={() => handleOpen(acc.id)}
-                                            className="bg-red-500 text-white p-1 rounded"
-                                        >
-                                            Update account
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <AccountModel open={open} handleClose={handleClose} accountId={selectedAccountId} handleGetAllAccounts={handleGetAllAccounts} />
+
+                    <div className='my-4'>
+                        <Tabs tabsData={tabData} selectedTab={selectedTab} handleChange={handleChangeTab} type={'underline'} />
+                    </div>
+
+                    {
+                        selectedTab === 0 && (
+                            <Account />
+                        )
+                    }
+                    {
+                        selectedTab === 1 && (
+                            <Opportunities />
+                        )
+                    }
                 </>
             )}
         </div>
