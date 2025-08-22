@@ -108,8 +108,8 @@ const Salesforce = ({ setAlert }) => {
             )}
             <h2 className="text-xl font-bold mb-2">Salesforce Integration</h2>
             {error && <p className="text-red-500">Error: {error}</p>}
-            <p>Access Token: {accessToken}</p>
-            <p>Instance URL: {instanceUrl}</p>
+            {/* <p>Access Token: {accessToken}</p>
+            <p>Instance URL: {instanceUrl}</p> */}
 
             {!isLoggedIn ? (
                 <button

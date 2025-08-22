@@ -83,13 +83,13 @@ const DatePickerComponent = ({ name, setValue, control, label, minDate, maxDate,
                 setValue(name, date ? dayjs(date).format("MM/DD/YYYY") : null);
               }}
               minDate={minDate ? dayjs(minDate) : null}
-              maxDate={maxDate ? dayjs(maxDate) : dayjs(new Date())}             
+              maxDate={maxDate ? dayjs(maxDate) : null}             
               slotProps={{
                 textField: {
                   fullWidth: true,
                   variant: "outlined",
                   error: !!fieldState.error,
-                  helperText: fieldState.error ? "This field is required" : null,
+                  // helperText: fieldState.error ? "This field is required" : null,
                   sx: {
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '0.5rem',

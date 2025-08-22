@@ -6,7 +6,17 @@ const instanceUrl = sessionStorage.getItem("instanceUrl_salesforce");
 
 export const syncAccountsFromQ4Magic = async () => {
     try {
-        const response = await axios.get(`${syncFromQ4magicURL}/accounts?access_token=${accessToken}&instance_url=${instanceUrl}`);
+        const response = await axios.get(`${syncFromQ4magicURL}?access_token=${accessToken}&instance_url=${instanceUrl}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error syncing from Q4Magic:", error);
+        throw error;
+    }
+};
+
+export const syncOpportunitiesFromQ4Magic = async () => {
+    try {
+        const response = await axios.get(`${syncFromQ4magicURL}?access_token=${accessToken}&instance_url=${instanceUrl}`);
         return response.data;
     } catch (error) {
         console.error("Error syncing from Q4Magic:", error);
