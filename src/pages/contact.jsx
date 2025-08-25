@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react'
-import { deleteAccount, getAllAccounts } from '../service/account/accountService';
-import AccountModel from '../models/accountModel';
 import { connect } from 'react-redux';
 import { setAlert } from '../redux/commonReducers/commonReducers';
 import { syncToQ4Magic } from '../service/salesforce/syncToQ4Magic/syncToQ4MagicService';
-import { syncFromQ4magic } from '../service/salesforce/syncFromQ4magic/syncFromQ4magicService';
 import { getAllSyncRecords } from '../service/syncRecords/syncRecordsService';
 import Badge from '@mui/material/Badge';
+import { deleteContact, getAllContacts } from '../service/contact/contactService';
+import { syncFromQ4magic } from '../service/salesforce/syncFromQ4magic/syncFromQ4magicService';
+import ContactModel from '../models/contactModel';
 
-const Account = ({ setAlert }) => {
-    const [accounts, setAccounts] = useState([]);
+const Contact = ({ setAlert }) => {
+    const [contacts, setContacts] = useState([]);
     const [open, setOpen] = useState(false);
-    const [selectedAccountId, setSelectedAccountId] = useState(null);
+    const [selectedContactId, setSelectedContactId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [syncRecords, setSyncRecords] = useState([]);
 
-    const handleOpen = (accountId = null) => {
-        setSelectedAccountId(accountId);
+    const handleOpen = (contactId = null) => {
+        setSelectedContactId(contactId);
         setOpen(true);
     }
 
@@ -24,12 +24,12 @@ const Account = ({ setAlert }) => {
         setOpen(false);
     }
 
-    const handleGetAllAccounts = async () => {
+    const handleGetAllContacts = async () => {
         setLoading(true);
         try {
-            const accRes = await getAllAccounts();
+            const accRes = await getAllContacts();
             if (accRes?.status === 200) {
-                setAccounts(accRes.result || []);
+                setContacts(accRes.result || []);
                 handleGetAllSyncRecords();
                 setLoading(false);
             }
@@ -44,31 +44,7 @@ const Account = ({ setAlert }) => {
         }
     };
 
-    const handleSync = async () => {
-        setLoading(true);
-        try {
-            const res = await syncToQ4Magic();
-            if (res?.status === 200) {
-                handlePushAccounts();
-            } else {
-                setLoading(false);
-                setAlert({
-                    open: true,
-                    message: res?.message || "Failed to sync accounts",
-                    type: "error"
-                })
-            }
-        } catch (err) {
-            setLoading(false);
-            setAlert({
-                open: true,
-                message: err.message || "Error syncing accounts to Q4Magic.",
-                type: "error"
-            })
-        }
-    }
-
-    const handlePushAccounts = async () => {
+    const handlePushContacts = async () => {
         setLoading(true);
         try {
             const res = await syncFromQ4magic();
@@ -76,15 +52,15 @@ const Account = ({ setAlert }) => {
                 setLoading(false);
                 setAlert({
                     open: true,
-                    message: res?.message || "Accounts synced successfully",
+                    message: res?.message || "Contacts synced successfully",
                     type: "success"
                 })
-                handleGetAllAccounts();
+                handleGetAllContacts();
             } else {
                 setLoading(false);
                 setAlert({
                     open: true,
-                    message: res?.message || "Failed to sync accounts",
+                    message: res?.message || "Failed to sync contacts",
                     type: "error"
                 })
             }
@@ -92,25 +68,50 @@ const Account = ({ setAlert }) => {
             setLoading(false);
             setAlert({
                 open: true,
-                message: err.message || "Error syncing accounts to Q4Magic.",
+                message: err.message || "Error syncing opportunities to Q4Magic.",
                 type: "error"
             })
         }
     }
 
-    const handleDeleteAccount = async (accountId) => {
-        const res = await deleteAccount(accountId);
+    const handleSync = async () => {
+        setLoading(true);
+        try {
+            const res = await syncToQ4Magic();
+            if (res?.status === 200) {
+                handlePushContacts();
+
+            } else {
+                setLoading(false);
+                setAlert({
+                    open: true,
+                    message: res?.message || "Failed to sync contacts",
+                    type: "error"
+                })
+            }
+        } catch (err) {
+            setLoading(false);
+            setAlert({
+                open: true,
+                message: err.message || "Error syncing contacts to Q4Magic.",
+                type: "error"
+            })
+        }
+    }
+
+    const handleDeleteContact = async (contactId) => {
+        const res = await deleteContact(contactId);
         if (res.status === 200) {
             setAlert({
                 open: true,
-                message: "Account deleted successfully",
+                message: "Contact deleted successfully",
                 type: "success"
             });
-            handleGetAllAccounts();
+            handleGetAllContacts();
         } else {
             setAlert({
                 open: true,
-                message: res?.message || "Failed to delete account",
+                message: res?.message || "Failed to delete contact",
                 type: "error"
             });
         }
@@ -132,7 +133,7 @@ const Account = ({ setAlert }) => {
     }
 
     useEffect(() => {
-        handleGetAllAccounts();
+        handleGetAllContacts();
         handleGetAllSyncRecords();
     }, []);
 
@@ -144,7 +145,7 @@ const Account = ({ setAlert }) => {
                 </div>
             )}
             <div className='flex justify-start items-center space-x-2 mb-4'>
-                <button onClick={() => handleOpen()} className="bg-purple-700 text-white p-2 rounded">Add New Account</button>
+                <button onClick={() => handleOpen()} className="bg-purple-700 text-white p-2 rounded">Add New Contact</button>
                 <Badge badgeContent={syncRecords?.length || 0} color="error">
                     <div>
                         <button
@@ -162,25 +163,30 @@ const Account = ({ setAlert }) => {
                 <thead>
                     <tr>
                         <th className="border p-2">Id</th>
-                        <th className="border p-2">Name</th>
-                        <th className="border p-2">Phone</th>
+                        <th className="border p-2">First Name</th>
+                        <th className="border p-2">Last Name</th>
+                        <th className="border p-2">Email</th>
+                        <th className="border p-2">Title</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {accounts.map((acc) => (
-                        <tr key={acc.Id}>
-                            <td className="border p-2">{acc.salesforceAccountId}</td>
-                            <td className="border p-2">{acc.accountName}</td>
-                            <td className="border p-2">{acc.phone}</td>
+                    {contacts?.map((contact) => (
+                        <tr key={contact.Id}>
+                            <td className="border p-2">{contact.salesforceContactId}</td>
+                            <td className="border p-2">{contact.firstName}</td>
+                            <td className="border p-2">{contact.lastName}</td>
+                            <td className="border p-2">{contact.emailAddress}</td>
+                            <td className="border p-2">{contact.title}</td>
+
                             <td className="border p-2 flex justify-center items-center space-x-2">
                                 <button
-                                    onClick={() => handleOpen(acc.id)}
+                                    onClick={() => handleOpen(contact.id)}
                                     className="bg-blue-500 text-white p-1 rounded"
                                 >
                                     Update
                                 </button>
                                 <button
-                                    onClick={() => handleDeleteAccount(acc.id)}
+                                    onClick={() => handleDeleteContact(contact.id)}
                                     className="bg-red-500 text-white p-1 rounded"
                                 >
                                     Delete
@@ -190,7 +196,13 @@ const Account = ({ setAlert }) => {
                     ))}
                 </tbody>
             </table>
-            <AccountModel open={open} handleClose={handleClose} accountId={selectedAccountId} handleGetAllAccounts={handleGetAllAccounts} handleGetAllSyncRecords={handleGetAllSyncRecords} />
+            <ContactModel
+                open={open}
+                handleClose={handleClose}
+                contactId={selectedContactId}
+                handleGetAllContacts={handleGetAllContacts}
+                handleGetAllSyncRecords={handleGetAllSyncRecords}
+            />
         </div>
     )
 }
@@ -199,4 +211,4 @@ const mapDispatchToProps = {
     setAlert,
 };
 
-export default connect(null, mapDispatchToProps)(Account)
+export default connect(null, mapDispatchToProps)(Contact)

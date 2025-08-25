@@ -5,6 +5,7 @@ import { setAlert } from "./redux/commonReducers/commonReducers";
 import { Tabs } from "./components/common/tabs/tabs";
 import Account from "./pages/account";
 import Opportunities from "./pages/opportunities";
+import Contact from "./pages/contact";
 
 
 const tabData = [
@@ -14,6 +15,9 @@ const tabData = [
     {
         label: 'Opportunities',
     },
+    {
+        label: 'Contacts',
+    }
 ]
 
 const Salesforce = ({ setAlert }) => {
@@ -134,6 +138,11 @@ const Salesforce = ({ setAlert }) => {
                     {
                         selectedTab === 1 && (
                             <Opportunities />
+                        )
+                    }
+                     {
+                        selectedTab === 2 && (
+                            <Contact />
                         )
                     }
                 </>

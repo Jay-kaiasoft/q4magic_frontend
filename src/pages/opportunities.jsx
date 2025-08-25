@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { deleteOpportunity, getAllOpportunities } from '../service/opportunities/opportunitiesService';
-import { syncOpportunitiesToQ4Magic } from '../service/salesforce/syncToQ4Magic/syncToQ4MagicService';
-import { syncOpportunitiesFromQ4Magic } from '../service/salesforce/syncFromQ4magic/syncFromQ4magicService';
+import { syncToQ4Magic } from '../service/salesforce/syncToQ4Magic/syncToQ4MagicService';
+import { syncFromQ4magic } from '../service/salesforce/syncFromQ4magic/syncFromQ4magicService';
 import { connect } from 'react-redux';
 import { setAlert } from '../redux/commonReducers/commonReducers';
 import OpportunitiesModel from '../models/opportunitiesModel';
+import { getAllSyncRecords } from '../service/syncRecords/syncRecordsService';
+import { Badge } from '@mui/material';
 
 const Opportunities = ({ setAlert }) => {
   const [opportunities, setOpportunities] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedOpportunityId, setSelectedOpportunityId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [syncRecords, setSyncRecords] = useState([]);
 
   const handleOpen = (opportunityId = null) => {
     setSelectedOpportunityId(opportunityId);
@@ -26,8 +29,9 @@ const Opportunities = ({ setAlert }) => {
     try {
       const oppRes = await getAllOpportunities();
       if (oppRes?.status === 200) {
-        setLoading(false);
+        handleGetAllSyncRecords();
         setOpportunities(oppRes.result || []);
+        setLoading(false);
       }
     } catch (err) {
       setAlert({
@@ -40,35 +44,10 @@ const Opportunities = ({ setAlert }) => {
     }
   };
 
-  const handleSyncOpportunities = async () => {
-    setLoading(true);
-    try {
-      const res = await syncOpportunitiesToQ4Magic();
-      if (res?.status === 200) {
-        handlePushOpportunities();
-        handleGetAllOpportunities();
-      } else {
-        setLoading(false);
-        setAlert({
-          open: true,
-          message: res?.message || "Failed to sync opportunities",
-          type: "error"
-        })
-      }
-    } catch (err) {
-      setLoading(false);
-      setAlert({
-        open: true,
-        message: err.message || "Error syncing opportunities to Q4Magic.",
-        type: "error"
-      })
-    }
-  }
-
   const handlePushOpportunities = async () => {
     setLoading(true);
     try {
-      const res = await syncOpportunitiesFromQ4Magic();
+      const res = await syncFromQ4magic();
       if (res?.status === 200) {
         setLoading(false);
         setAlert({
@@ -113,8 +92,48 @@ const Opportunities = ({ setAlert }) => {
     }
   }
 
+  const handleGetAllSyncRecords = async () => {
+    try {
+      const syncRecords = await getAllSyncRecords();
+      if (syncRecords?.status === 200) {
+        setSyncRecords(syncRecords.result || []);
+      }
+    } catch (error) {
+      setAlert({
+        open: true,
+        message: error.message || "Error fetching sync records.",
+        type: "error"
+      });
+    }
+  }
+
+  const handleSync = async () => {
+    setLoading(true);
+    try {
+      const res = await syncToQ4Magic();
+      if (res?.status === 200) {
+        handlePushOpportunities();
+      } else {
+        setLoading(false);
+        setAlert({
+          open: true,
+          message: res?.message || "Failed to sync opportunities",
+          type: "error"
+        })
+      }
+    } catch (err) {
+      setLoading(false);
+      setAlert({
+        open: true,
+        message: err.message || "Error syncing opportunities to Q4Magic.",
+        type: "error"
+      })
+    }
+  }
+
   useEffect(() => {
     handleGetAllOpportunities();
+    handleGetAllSyncRecords();
   }, []);
 
   return (
@@ -126,7 +145,16 @@ const Opportunities = ({ setAlert }) => {
       )}
       <div className='flex justify-start items-center space-x-2 mb-4'>
         <button onClick={() => handleOpen()} className="bg-purple-700 text-white p-2 rounded">Add New Opportunity</button>
-        <button onClick={handleSyncOpportunities} className="bg-green-500 text-white p-2 rounded">SYNCH</button>
+        <Badge badgeContent={syncRecords?.length || 0} color="error">
+          <div>
+            <button
+              onClick={handleSync}
+              className="bg-green-500 text-white p-2 rounded"
+            >
+              SYNC
+            </button>
+          </div>
+        </Badge>
       </div>
       <table className="table-auto border-collapse border border-gray-300">
         <thead>
@@ -169,7 +197,7 @@ const Opportunities = ({ setAlert }) => {
           ))}
         </tbody>
       </table>
-      <OpportunitiesModel open={open} handleClose={handleClose} opportunityId={selectedOpportunityId} handleGetAllOpportunities={handleGetAllOpportunities} />
+      <OpportunitiesModel open={open} handleClose={handleClose} opportunityId={selectedOpportunityId} handleGetAllOpportunities={handleGetAllOpportunities} handleGetAllSyncRecords={handleGetAllSyncRecords} />
     </div>
   )
 }

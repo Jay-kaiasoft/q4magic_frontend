@@ -20,7 +20,7 @@ const BootstrapDialog = styled(Components.Dialog)(({ theme }) => ({
     },
 }));
 
-function AccountModel({ setAlert, open, handleClose, accountId, handleGetAllAccounts }) {
+function AccountModel({ setAlert, open, handleClose, accountId, handleGetAllAccounts , handleGetAllSyncRecords }) {
     const theme = useTheme()
 
     const [loading, setLoading] = useState(false);
@@ -101,6 +101,7 @@ function AccountModel({ setAlert, open, handleClose, accountId, handleGetAllAcco
                         type: "success"
                     });
                     handleGetAllAccounts();
+                    handleGetAllSyncRecords();
                     onClose();
                 } else {
                     setLoading(false);
@@ -120,6 +121,7 @@ function AccountModel({ setAlert, open, handleClose, accountId, handleGetAllAcco
                         type: "success"
                     });
                     handleGetAllAccounts();
+                    handleGetAllSyncRecords();
                     onClose();
                 } else {
                     setLoading(false);

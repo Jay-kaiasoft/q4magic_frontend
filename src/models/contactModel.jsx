@@ -8,9 +8,8 @@ import { connect } from 'react-redux';
 import { setAlert } from '../redux/commonReducers/commonReducers';
 import CustomIcons from '../components/common/icons/CustomIcons';
 import Select from '../components/common/select/select';
-import { createOpportunity, getOpportunityDetails, updateOpportunity } from '../service/opportunities/opportunitiesService';
-import DatePickerComponent from '../components/common/datePickerComponent/datePickerComponent';
-import { getAllAccounts } from '../service/account/accountService';
+import { getAllOpportunities } from '../service/opportunities/opportunitiesService';
+import { createContact, getContactDetails, updateContact } from '../service/contact/contactService';
 
 const BootstrapDialog = styled(Components.Dialog)(({ theme }) => ({
     '& .MuiDialogContent-root': {
@@ -21,10 +20,12 @@ const BootstrapDialog = styled(Components.Dialog)(({ theme }) => ({
     },
 }));
 
-function OpportunitiesModel({ setAlert, open, handleClose, opportunityId, handleGetAllOpportunities, handleGetAllSyncRecords }) {
+function ContactModel({ setAlert, open, handleClose, contactId, handleGetAllContacts, handleGetAllSyncRecords }) {
     const theme = useTheme()
-    const [accounts, setAccounts] = useState([]);
+
     const [loading, setLoading] = useState(false);
+    const [opportunities, setOpportunities] = useState([]);
+
     const {
         handleSubmit,
         control,
@@ -34,97 +35,109 @@ function OpportunitiesModel({ setAlert, open, handleClose, opportunityId, handle
         formState: { errors },
     } = useForm({
         defaultValues: {
-            opportunity: null,
-            salesStage: null,
-            dealAmount: null,
-            closeDate: null,
-            nextSteps: null,
-            accountId: null
+            id: null,
+            opportunityId: null,
+            salesforceContactId: null,
+            firstName: null,
+            middleName: null,
+            lastName: null,
+            linkedinProfile: null,
+            title: null,
+            emailAddress: null,
+            role: null,
+            notes: null,
+            keyContact: null,
+            recordStatus: null,
         },
     });
 
     const onClose = () => {
         setLoading(false);
         reset({
-            accountId: null,
-            opportunity: null,
-            salesStage: null,
-            dealAmount: null,
-            closeDate: null,
-            nextSteps: null
+            id: null,
+            opportunityId: null,
+            salesforceContactId: null,
+            firstName: null,
+            middleName: null,
+            lastName: null,
+            linkedinProfile: null,
+            title: null,
+            emailAddress: null,
+            role: null,
+            notes: null,
+            keyContact: null,
+            recordStatus: null,
         });
         handleClose();
     };
 
-    const handleGetOpportunityDetails = async () => {
-        if (opportunityId && open) {
-            const res = await getOpportunityDetails(opportunityId);
+    const handleGetAllOpportunities = async () => {
+        if (open) {
+            const res = await getAllOpportunities()
+            const data = res?.result?.map((item) => {
+                return {
+                    id: item.id,
+                    title: item.opportunity
+                }
+            })
+            setOpportunities(data)
+        }
+    }
+
+    const handleGetContactDetails = async () => {
+        if (contactId && open) {
+            const res = await getContactDetails(contactId);
             if (res?.status === 200) {
                 reset(res?.result);
             }
         }
     }
 
-    const handleGetAllAccounts = async () => {
-        if (open) {
-            setLoading(true);
-            const res = await getAllAccounts();
-            if (res?.status === 200) {
-                const data = res?.result?.map((acc) => ({
-                    title: acc.accountName,
-                    id: acc.id
-                }));
-                setAccounts(data);
-                setLoading(false);
-            }
-        }
-    };
-
     useEffect(() => {
-        handleGetAllAccounts()
-        handleGetOpportunityDetails()
+        handleGetAllOpportunities()
+        handleGetContactDetails()
     }, [open])
 
     const submit = async (data) => {
         setLoading(true);
         try {
-            if (opportunityId) {
-                const res = await updateOpportunity(opportunityId, data);
+            if (contactId) {
+                const res = await updateContact(contactId, data);
                 if (res?.status === 200) {
                     setLoading(false);
                     setAlert({
                         open: true,
-                        message: "Opportunity updated successfully",
+                        message: "Contact updated successfully",
                         type: "success"
                     });
-                    handleGetAllOpportunities();
+                    handleGetAllContacts();
                     handleGetAllSyncRecords();
                     onClose();
                 } else {
                     setLoading(false);
                     setAlert({
                         open: true,
-                        message: res?.message || "Failed to update opportunity",
+                        message: res?.message || "Failed to update contact",
                         type: "error"
                     });
                 }
             } else {
-                const res = await createOpportunity(data);
+                const res = await createContact(data);
                 if (res?.status === 201) {
                     setLoading(false);
                     setAlert({
                         open: true,
-                        message: "Opportunity created successfully",
+                        message: "Contact created successfully",
                         type: "success"
                     });
-                    handleGetAllOpportunities();
+                    handleGetAllContacts();
                     handleGetAllSyncRecords();
                     onClose();
                 } else {
                     setLoading(false);
                     setAlert({
                         open: true,
-                        message: res?.message || "Failed to create opportunity",
+                        message: res?.message || "Failed to create contact",
                         type: "error"
                     });
                 }
@@ -148,7 +161,7 @@ function OpportunitiesModel({ setAlert, open, handleClose, opportunityId, handle
                 maxWidth='sm'
             >
                 <Components.DialogTitle sx={{ m: 0, p: 2, color: theme.palette.primary.text.main }} id="customized-dialog-title">
-                    {opportunityId ? "Update" : "Create"} Opportunity
+                    {contactId ? "Update" : "Add New"} Contact
                 </Components.DialogTitle>
 
                 <Components.IconButton
@@ -167,41 +180,43 @@ function OpportunitiesModel({ setAlert, open, handleClose, opportunityId, handle
                 <form noValidate onSubmit={handleSubmit(submit)}>
                     <Components.DialogContent dividers>
                         <div className='grid grid-cols-2 gap-4'>
+                            <div>
+                                <Controller
+                                    name="opportunityId"
+                                    control={control}
+                                    rules={{
+                                        required: "Opportunity is required"
+                                    }}
+                                    render={({ field }) => (
+                                        <Select
+                                            options={opportunities}
+                                            label={"Opportunity"}
+                                            placeholder="Select Opportunity"
+                                            value={parseInt(watch("opportunityId")) || null}
+                                            onChange={(_, newValue) => {
+                                                if (newValue?.id) {
+                                                    field.onChange(newValue.id);
+                                                } else {
+                                                    setValue("opportunityId", null);
+                                                }
+                                            }}
+                                            error={errors?.opportunityId}
+                                        />
+                                    )}
+                                />
+                            </div>
                             <Controller
-                                name="accountId"
+                                name="firstName"
                                 control={control}
                                 rules={{
-                                    required: "Account is required"
-                                }}
-                                render={({ field }) => (
-                                    <Select
-                                        options={accounts}
-                                        label={"Account"}
-                                        placeholder="Select Account"
-                                        value={parseInt(watch("accountId")) || null}
-                                        onChange={(_, newValue) => {
-                                            if (newValue?.id) {
-                                                field.onChange(newValue.id);
-                                            } else {
-                                                setValue("accountId", null);
-                                            }
-                                        }}
-                                        error={errors?.accountId}
-                                    />
-                                )}
-                            />
-                            <Controller
-                                name="opportunity"
-                                control={control}
-                                rules={{
-                                    required: "Opportunity name is required",
+                                    required: "First name is required",
                                 }}
                                 render={({ field }) => (
                                     <Input
                                         {...field}
-                                        label="Opportunity Name"
+                                        label="First Name"
                                         type={`text`}
-                                        error={errors.opportunity}
+                                        error={errors.firstName}
                                         onChange={(e) => {
                                             field.onChange(e);
                                         }}
@@ -209,55 +224,57 @@ function OpportunitiesModel({ setAlert, open, handleClose, opportunityId, handle
                                 )}
                             />
                             <Controller
-                                name="dealAmount"
+                                name="lastName"
                                 control={control}
                                 rules={{
-                                    required: "Deal amount is required",
+                                    required: "Last name is required",
                                 }}
                                 render={({ field }) => (
                                     <Input
                                         {...field}
-                                        label="Deal Amount"
+                                        label="Last Name"
                                         type={`text`}
-                                        error={errors.dealAmount}
-                                        onChange={(e) => {
-                                            const value = e.target.value.replace(/\D/g, '');
-                                            field.onChange(value);
-                                        }}
-                                    />
-                                )}
-                            />
-                            <Controller
-                                name="salesStage"
-                                control={control}
-                                rules={{
-                                    required: "Stage is required",
-                                }}
-                                render={({ field }) => (
-                                    <Input
-                                        {...field}
-                                        label="Stage"
-                                        type={`text`}
-                                        error={errors.salesStage}
+                                        error={errors.lastName}
                                         onChange={(e) => {
                                             field.onChange(e.target.value);
                                         }}
                                     />
                                 )}
                             />
-                            <DatePickerComponent setValue={setValue} control={control} name='closeDate' label={`Close Date`} minDate={null} maxDate={null} required={true} />
                             <Controller
-                                name="nextSteps"
+                                name="title"
                                 control={control}
                                 rules={{
-                                    required: "Next steps is required",
+                                    required: "Title is required",
                                 }}
                                 render={({ field }) => (
                                     <Input
                                         {...field}
-                                        label="Next Steps"
+                                        label="Title"
                                         type={`text`}
-                                        error={errors.nextSteps}
+                                        error={errors.title}
+                                        onChange={(e) => {
+                                            field.onChange(e.target.value);
+                                        }}
+                                    />
+                                )}
+                            />
+                            <Controller
+                                name="emailAddress"
+                                control={control}
+                                rules={{
+                                    required: "Email address is required",
+                                    pattern: {
+                                        value: /^\S+@\S+$/i,
+                                        message: "Email address is invalid",
+                                    },
+                                }}
+                                render={({ field }) => (
+                                    <Input
+                                        {...field}
+                                        label="Email Address"
+                                        type={`text`}
+                                        error={errors.emailAddress}
                                         onChange={(e) => {
                                             field.onChange(e.target.value);
                                         }}
@@ -269,7 +286,7 @@ function OpportunitiesModel({ setAlert, open, handleClose, opportunityId, handle
 
                     <Components.DialogActions>
                         <div className='flex justify-end'>
-                            <Button type={`submit`} text={opportunityId ? "Update" : "Submit"} isLoading={loading} />
+                            <Button type={`submit`} text={contactId ? "Update" : "Submit"} isLoading={loading} />
                         </div>
                     </Components.DialogActions>
                 </form>
@@ -282,4 +299,4 @@ const mapDispatchToProps = {
     setAlert,
 };
 
-export default connect(null, mapDispatchToProps)(OpportunitiesModel)
+export default connect(null, mapDispatchToProps)(ContactModel)

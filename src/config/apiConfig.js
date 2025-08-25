@@ -10,3 +10,5 @@ export const accountURL = baseURL + '/account'
 export const crmURL = baseURL + '/crm'
 export const opportunityURL = baseURL + '/opportunities'
 export const syncRecordsURL = baseURL + '/syncRecords'
+export const contactURL = baseURL + '/contact'
+
