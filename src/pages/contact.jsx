@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux';
-import { setAlert } from '../redux/commonReducers/commonReducers';
+import { setAlert, setLoading } from '../redux/commonReducers/commonReducers';
 import { syncToQ4Magic } from '../service/salesforce/syncToQ4Magic/syncToQ4MagicService';
 import { getAllSyncRecords } from '../service/syncRecords/syncRecordsService';
 import Badge from '@mui/material/Badge';
@@ -8,11 +8,10 @@ import { deleteContact, getAllContacts } from '../service/contact/contactService
 import { syncFromQ4magic } from '../service/salesforce/syncFromQ4magic/syncFromQ4magicService';
 import ContactModel from '../models/contactModel';
 
-const Contact = ({ setAlert }) => {
+const Contact = ({ setAlert, setLoading }) => {
     const [contacts, setContacts] = useState([]);
     const [open, setOpen] = useState(false);
     const [selectedContactId, setSelectedContactId] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [syncRecords, setSyncRecords] = useState([]);
 
     const handleOpen = (contactId = null) => {
@@ -139,11 +138,6 @@ const Contact = ({ setAlert }) => {
 
     return (
         <div className='px-4'>
-            {loading && (
-                <div className="flex justify-center items-center absolute h-screen bg-gray-200 w-screen opacity-50">
-                    <p>Loading...</p>
-                </div>
-            )}
             <div className='flex justify-start items-center space-x-2 mb-4'>
                 <button onClick={() => handleOpen()} className="bg-purple-700 text-white p-2 rounded">Add New Contact</button>
                 <Badge badgeContent={syncRecords?.length || 0} color="error">
@@ -170,8 +164,8 @@ const Contact = ({ setAlert }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {contacts?.map((contact) => (
-                        <tr key={contact.Id}>
+                    {contacts?.map((contact, index) => (
+                        <tr key={index}>
                             <td className="border p-2">{contact.salesforceContactId}</td>
                             <td className="border p-2">{contact.firstName}</td>
                             <td className="border p-2">{contact.lastName}</td>
@@ -209,6 +203,7 @@ const Contact = ({ setAlert }) => {
 
 const mapDispatchToProps = {
     setAlert,
+    setLoading
 };
 
 export default connect(null, mapDispatchToProps)(Contact)

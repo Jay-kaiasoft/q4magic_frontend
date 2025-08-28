@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { connectToSalesforce } from "./service/salesforce/connect/salesforceConnectService";
 import { connect } from "react-redux";
-import { setAlert } from "./redux/commonReducers/commonReducers";
+import { setAlert, setLoading } from "./redux/commonReducers/commonReducers";
 import { Tabs } from "./components/common/tabs/tabs";
 import Account from "./pages/account";
 import Opportunities from "./pages/opportunities";
 import Contact from "./pages/contact";
-
 
 const tabData = [
     {
@@ -20,11 +19,10 @@ const tabData = [
     }
 ]
 
-const Salesforce = ({ setAlert }) => {
+const Salesforce = ({ setAlert, setLoading }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [accessToken, setAccessToken] = useState(sessionStorage.getItem("accessToken_salesforce") || "");
     const [instanceUrl, setInstanceUrl] = useState(sessionStorage.getItem("instanceUrl_salesforce") || "");
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [selectedTab, setSelectedTab] = useState(0);
 
@@ -97,6 +95,14 @@ const Salesforce = ({ setAlert }) => {
         }
     };
 
+    const handleLogout = () => {
+        setAccessToken(null);
+        setInstanceUrl(null);
+        sessionStorage.removeItem("accessToken_salesforce");
+        sessionStorage.removeItem("instanceUrl_salesforce");
+        setIsLoggedIn(false);
+    };
+
     useEffect(() => {
         if (accessToken && instanceUrl) {
             setIsLoggedIn(true);
@@ -105,13 +111,10 @@ const Salesforce = ({ setAlert }) => {
 
     return (
         <div className="p-4">
-            {loading && (
-                <div className="flex justify-center items-center absolute h-screen bg-gray-200 w-screen opacity-50">
-                    <p>Loading...</p>
-                </div>
-            )}
-            <h2 className="text-xl font-bold mb-2">Salesforce Integration</h2>
-            {error && <p className="text-red-500">Error: {error}</p>}
+            <div>
+                <h2 className="text-xl font-bold mb-2">Salesforce Integration</h2>
+                {error && <p className="text-red-500">Error: {error}</p>}
+            </div>
             {/* <p>Access Token: {accessToken}</p>
             <p>Instance URL: {instanceUrl}</p> */}
 
@@ -124,7 +127,16 @@ const Salesforce = ({ setAlert }) => {
                 </button>
             ) : (
                 <>
-                    <p className="mt-4">✅ Logged in to Salesforce</p>
+                    <div className="flex justify-start items-center gap-4 w-full">
+                        <div className="grow">
+                            <p className="mt-4">✅ Logged in to Salesforce</p>
+                        </div>
+                        <div>
+                            <button onClick={handleLogout} className="bg-red-500 text-white p-2 rounded">
+                                Logout
+                            </button>
+                        </div>
+                    </div>
 
                     <div className='my-4'>
                         <Tabs tabsData={tabData} selectedTab={selectedTab} handleChange={handleChangeTab} type={'underline'} />
@@ -140,7 +152,7 @@ const Salesforce = ({ setAlert }) => {
                             <Opportunities />
                         )
                     }
-                     {
+                    {
                         selectedTab === 2 && (
                             <Contact />
                         )
@@ -154,6 +166,7 @@ const Salesforce = ({ setAlert }) => {
 
 const mapDispatchToProps = {
     setAlert,
+    setLoading
 };
 
 export default connect(null, mapDispatchToProps)(Salesforce)

@@ -2,17 +2,16 @@ import React, { useEffect, useState } from 'react'
 import { deleteAccount, getAllAccounts } from '../service/account/accountService';
 import AccountModel from '../models/accountModel';
 import { connect } from 'react-redux';
-import { setAlert } from '../redux/commonReducers/commonReducers';
+import { setAlert, setLoading } from '../redux/commonReducers/commonReducers';
 import { syncToQ4Magic } from '../service/salesforce/syncToQ4Magic/syncToQ4MagicService';
 import { syncFromQ4magic } from '../service/salesforce/syncFromQ4magic/syncFromQ4magicService';
 import { getAllSyncRecords } from '../service/syncRecords/syncRecordsService';
 import Badge from '@mui/material/Badge';
-
-const Account = ({ setAlert }) => {
+const Account = ({ setAlert, setLoading }) => {
     const [accounts, setAccounts] = useState([]);
     const [open, setOpen] = useState(false);
     const [selectedAccountId, setSelectedAccountId] = useState(null);
-    const [loading, setLoading] = useState(false);
+    // const [loading, setLoading] = useState(false);
     const [syncRecords, setSyncRecords] = useState([]);
 
     const handleOpen = (accountId = null) => {
@@ -138,11 +137,11 @@ const Account = ({ setAlert }) => {
 
     return (
         <div className='px-4'>
-            {loading && (
-                <div className="flex justify-center items-center absolute h-screen bg-gray-200 w-screen opacity-50">
+            {/* {!loading && (
+                <div className="absolute inset-0 flex justify-center items-center h-screen bg-gray-200 w-screen opacity-50">
                     <p>Loading...</p>
                 </div>
-            )}
+            )} */}
             <div className='flex justify-start items-center space-x-2 mb-4'>
                 <button onClick={() => handleOpen()} className="bg-purple-700 text-white p-2 rounded">Add New Account</button>
                 <Badge badgeContent={syncRecords?.length || 0} color="error">
@@ -167,8 +166,8 @@ const Account = ({ setAlert }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {accounts.map((acc) => (
-                        <tr key={acc.Id}>
+                    {accounts?.map((acc, index) => (
+                        <tr key={index}>
                             <td className="border p-2">{acc.salesforceAccountId}</td>
                             <td className="border p-2">{acc.accountName}</td>
                             <td className="border p-2">{acc.phone}</td>
@@ -197,6 +196,7 @@ const Account = ({ setAlert }) => {
 
 const mapDispatchToProps = {
     setAlert,
+    setLoading,
 };
 
 export default connect(null, mapDispatchToProps)(Account)

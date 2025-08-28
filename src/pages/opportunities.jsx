@@ -3,16 +3,15 @@ import { deleteOpportunity, getAllOpportunities } from '../service/opportunities
 import { syncToQ4Magic } from '../service/salesforce/syncToQ4Magic/syncToQ4MagicService';
 import { syncFromQ4magic } from '../service/salesforce/syncFromQ4magic/syncFromQ4magicService';
 import { connect } from 'react-redux';
-import { setAlert } from '../redux/commonReducers/commonReducers';
+import { setAlert, setLoading } from '../redux/commonReducers/commonReducers';
 import OpportunitiesModel from '../models/opportunitiesModel';
 import { getAllSyncRecords } from '../service/syncRecords/syncRecordsService';
 import { Badge } from '@mui/material';
 
-const Opportunities = ({ setAlert }) => {
+const Opportunities = ({ setAlert, setLoading }) => {
   const [opportunities, setOpportunities] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedOpportunityId, setSelectedOpportunityId] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [syncRecords, setSyncRecords] = useState([]);
 
   const handleOpen = (opportunityId = null) => {
@@ -137,12 +136,7 @@ const Opportunities = ({ setAlert }) => {
   }, []);
 
   return (
-    <div className='px-4'>
-      {loading && (
-        <div className="flex justify-center items-center absolute h-screen bg-gray-200 w-screen opacity-50">
-          <p>Loading...</p>
-        </div>
-      )}
+    <div className='px-4'>    
       <div className='flex justify-start items-center space-x-2 mb-4'>
         <button onClick={() => handleOpen()} className="bg-purple-700 text-white p-2 rounded">Add New Opportunity</button>
         <Badge badgeContent={syncRecords?.length || 0} color="error">
@@ -168,8 +162,8 @@ const Opportunities = ({ setAlert }) => {
           </tr>
         </thead>
         <tbody>
-          {opportunities.map((opp) => (
-            <tr key={opp.id}>
+          {opportunities?.map((opp, index) => (
+            <tr key={index}>
               <td className="border p-2">{opp.salesforceOpportunityId}</td>
               <td className="border p-2">{opp.opportunity}</td>
               <td className="border p-2">{opp.salesStage}</td>
@@ -204,6 +198,7 @@ const Opportunities = ({ setAlert }) => {
 
 const mapDispatchToProps = {
   setAlert,
+  setLoading
 };
 
 export default connect(null, mapDispatchToProps)(Opportunities);
