@@ -183,10 +183,7 @@ function ContactModel({ setAlert, open, handleClose, contactId, handleGetAllCont
                             <div>
                                 <Controller
                                     name="opportunityId"
-                                    control={control}
-                                    rules={{
-                                        required: "Opportunity is required"
-                                    }}
+                                    control={control}                                  
                                     render={({ field }) => (
                                         <Select
                                             options={opportunities}
@@ -200,7 +197,6 @@ function ContactModel({ setAlert, open, handleClose, contactId, handleGetAllCont
                                                     setValue("opportunityId", null);
                                                 }
                                             }}
-                                            error={errors?.opportunityId}
                                         />
                                     )}
                                 />

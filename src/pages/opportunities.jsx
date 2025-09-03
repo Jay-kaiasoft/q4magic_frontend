@@ -136,7 +136,7 @@ const Opportunities = ({ setAlert, setLoading }) => {
   }, []);
 
   return (
-    <div className='px-4'>    
+    <div className='px-4'>
       <div className='flex justify-start items-center space-x-2 mb-4'>
         <button onClick={() => handleOpen()} className="bg-purple-700 text-white p-2 rounded">Add New Opportunity</button>
         <Badge badgeContent={syncRecords?.length || 0} color="error">
@@ -162,7 +162,7 @@ const Opportunities = ({ setAlert, setLoading }) => {
           </tr>
         </thead>
         <tbody>
-          {opportunities?.map((opp, index) => (
+          {opportunities?.length > 0 ? opportunities?.map((opp, index) => (
             <tr key={index}>
               <td className="border p-2">{opp.salesforceOpportunityId}</td>
               <td className="border p-2">{opp.opportunity}</td>
@@ -188,7 +188,13 @@ const Opportunities = ({ setAlert, setLoading }) => {
                 </button>
               </td>
             </tr>
-          ))}
+          )) : (
+            <tr>
+              <td colSpan={6} className="border p-2 text-center">
+                No opportunities found. Please Sync data from Salesforce.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
       <OpportunitiesModel open={open} handleClose={handleClose} opportunityId={selectedOpportunityId} handleGetAllOpportunities={handleGetAllOpportunities} handleGetAllSyncRecords={handleGetAllSyncRecords} />

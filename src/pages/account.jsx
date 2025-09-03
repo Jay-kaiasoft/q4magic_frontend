@@ -7,6 +7,7 @@ import { syncToQ4Magic } from '../service/salesforce/syncToQ4Magic/syncToQ4Magic
 import { syncFromQ4magic } from '../service/salesforce/syncFromQ4magic/syncFromQ4magicService';
 import { getAllSyncRecords } from '../service/syncRecords/syncRecordsService';
 import Badge from '@mui/material/Badge';
+
 const Account = ({ setAlert, setLoading }) => {
     const [accounts, setAccounts] = useState([]);
     const [open, setOpen] = useState(false);
@@ -166,7 +167,7 @@ const Account = ({ setAlert, setLoading }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {accounts?.map((acc, index) => (
+                    {accounts?.length > 0 ? accounts?.map((acc, index) => (
                         <tr key={index}>
                             <td className="border p-2">{acc.salesforceAccountId}</td>
                             <td className="border p-2">{acc.accountName}</td>
@@ -186,7 +187,13 @@ const Account = ({ setAlert, setLoading }) => {
                                 </button>
                             </td>
                         </tr>
-                    ))}
+                    )) : (
+                        <tr>
+                            <td colSpan={4} className="border p-2 text-center">
+                                No accounts found. Please Sync data from Salesforce.
+                            </td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
             <AccountModel open={open} handleClose={handleClose} accountId={selectedAccountId} handleGetAllAccounts={handleGetAllAccounts} handleGetAllSyncRecords={handleGetAllSyncRecords} />

@@ -164,7 +164,7 @@ const Contact = ({ setAlert, setLoading }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {contacts?.map((contact, index) => (
+                    {contacts?.length > 0 ? contacts?.map((contact, index) => (
                         <tr key={index}>
                             <td className="border p-2">{contact.salesforceContactId}</td>
                             <td className="border p-2">{contact.firstName}</td>
@@ -187,7 +187,13 @@ const Contact = ({ setAlert, setLoading }) => {
                                 </button>
                             </td>
                         </tr>
-                    ))}
+                    )) : (
+                        <tr>
+                            <td colSpan={6} className="border p-2 text-center">
+                                No contacts found. Please Sync data from Salesforce.
+                            </td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
             <ContactModel
